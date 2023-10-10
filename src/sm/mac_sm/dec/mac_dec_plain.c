@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
+
 mac_event_trigger_t mac_dec_event_trigger_plain(size_t len, uint8_t const ev_tr[len])
 {
   mac_event_trigger_t ev = {0};
@@ -93,12 +95,42 @@ mac_ctrl_hdr_t mac_dec_ctrl_hdr_plain(size_t len, uint8_t const ctrl_hdr[len])
   return ret;
 }
 
+#define ASSERT_EQUAL_LEN_SIZEOF(len, type) \
+    do { \
+        if ((len) != sizeof(type)) { \
+            fprintf(stderr, "Assertion failed: len (%zu) != sizeof(" #type ") (%zu)\n", (size_t)(len), sizeof(type)); \
+            abort(); \
+        } \
+    } while (0)
+
 mac_ctrl_msg_t mac_dec_ctrl_msg_plain(size_t len, uint8_t const ctrl_msg[len])
 {
-  assert(len == sizeof(mac_ctrl_msg_t)); 
-  mac_ctrl_msg_t ret;
-  memcpy(&ret, ctrl_msg, len);
-  return ret;
+    mac_ctrl_msg_t ret = {0};
+
+    // Ensure that the provided length is at least the size of the base structure
+    assert(len >= sizeof(mac_ctrl_msg_t));
+
+    // Copy the base structure
+    memcpy(&ret, ctrl_msg, sizeof(mac_ctrl_msg_t));
+
+    // If there are users, decode the user data
+    if (ret.num_users > 0) {
+        size_t user_data_length = ret.num_users * sizeof(user_resource_t);
+
+        // Ensure that the provided length is sufficient to contain the user data
+        assert(len >= sizeof(mac_ctrl_msg_t) + user_data_length);
+
+        // Allocate memory for the user data
+        ret.resource_alloc = (user_resource_t *)malloc(user_data_length);
+        assert(ret.resource_alloc != NULL);
+
+        // Copy the user data from the byte array to the allocated memory
+        memcpy(ret.resource_alloc, ctrl_msg + sizeof(mac_ctrl_msg_t), user_data_length);
+    } else {
+        ret.resource_alloc = NULL;
+    }
+
+    return ret;
 }
 
 mac_ctrl_out_t mac_dec_ctrl_out_plain(size_t len, uint8_t const ctrl_out[len]) 

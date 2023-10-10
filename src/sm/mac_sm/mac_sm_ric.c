@@ -26,6 +26,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "enc/mac_enc_generic.h"
 #include "dec/mac_dec_generic.h"
@@ -111,8 +112,16 @@ sm_ctrl_req_data_t ric_on_control_req_mac_sm_ric(sm_ric_t const* sm_ric, void* c
 {
   assert(sm_ric != NULL); 
   assert(ctrl != NULL); 
-  mac_ctrl_req_data_t const* req = (mac_ctrl_req_data_t const*)ctrl;
+
+  sm_ag_if_wr_t const* sm_ctrl = (sm_ag_if_wr_t const* )ctrl; // &data->slice_req_ctrl;
+
+  mac_ctrl_req_data_t const* req = (mac_ctrl_req_data_t const*)&sm_ctrl->ctrl.mac_ctrl;
+  printf("req->hdr.dummy: %u\n", req->hdr.dummy);
   assert(req->hdr.dummy == 0);
+
+  printf("req->msg.action : %u\n", req->msg.action);
+  printf("req->num_users: %u\n", req->msg.num_users);
+  printf("req->resource_alloc address: %p\n", (void*)req->msg.resource_alloc);
   assert(req->msg.action == 42);
 
   sm_mac_ric_t* sm = (sm_mac_ric_t*)sm_ric;  
@@ -126,6 +135,8 @@ sm_ctrl_req_data_t ric_on_control_req_mac_sm_ric(sm_ric_t const* sm_ric, void* c
   ba = mac_enc_ctrl_msg(&sm->enc, &req->msg);
   ret_data.ctrl_msg = ba.buf;
   ret_data.len_msg = ba.len;
+
+  printf("req->len_msg: %lu\n", ba.len);
 
   return ret_data;
 }

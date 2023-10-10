@@ -49,6 +49,7 @@
 #include "../sm/kpm_sm/kpm_sm_id_wrapper.h"
 #include "../sm/rc_sm/rc_sm_id.h"
 
+#include "../../test/rnd/fill_rnd_data_mac.h"
 #include "../../test/rnd/fill_rnd_data_rc.h"
 #include "../../test/rnd/fill_rnd_data_kpm.h"
 
@@ -487,6 +488,15 @@ void send_control_request(e42_xapp_t* xapp, global_e2_node_id_t* id, ric_gen_id_
   assert(id != NULL);
   assert(ctrl_msg != NULL);
   assert(xapp->handle_msg[E42_RIC_CONTROL_REQUEST] != NULL);
+
+  printf("MAC info transmission \n");
+
+  sm_ag_if_wr_t const* mac_req_ctrl = (sm_ag_if_wr_t const* )ctrl_msg; // &data->slice_req_ctrl;
+  mac_ctrl_msg_t const* mac_msg = &mac_req_ctrl->ctrl.mac_ctrl.msg;
+
+  printf("mac->action: %u\n", mac_msg->action);
+  printf("mac->num_users: %u\n", mac_msg->num_users);
+  printf("mac->resource_alloc address: %p\n", (void*)mac_msg->resource_alloc);
 
   sm_ric_t* sm = sm_plugin_ric(&xapp->plugin_ric, ric_req.ran_func_id);
   

@@ -156,6 +156,22 @@ void rm_report_mac_sm(int handle)
 
 }
 
+// 231009 Goodsol (Refered from control_slice_sm)
+void control_mac_sm(global_e2_node_id_t* id, mac_ctrl_msg_t* ctrl)
+{
+  assert(id != NULL);
+  assert(ctrl != NULL);
+
+  printf("Control MAC in swig_wrapper.cpp \n");
+
+  sm_ag_if_wr_t wr;
+  wr.type = CONTROL_SM_AG_IF_WR;
+  wr.ctrl.type = MAC_CTRL_REQ_V0;
+  wr.ctrl.mac_ctrl.hdr.dummy = 0;
+  wr.ctrl.mac_ctrl.msg = cp_mac_ctrl_msg(ctrl);
+
+  control_sm_xapp_api(id, SM_MAC_ID, &wr);
+}
 
 //////////////////////////////////////
 // RLC SM   

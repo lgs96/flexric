@@ -25,6 +25,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 byte_array_t mac_enc_event_trigger_plain(mac_event_trigger_t const* event_trigger)
@@ -119,13 +120,24 @@ byte_array_t mac_enc_ctrl_msg_plain(mac_ctrl_msg_t const* ctrl_msg)
 {
   assert(ctrl_msg != NULL);
 
+  size_t total_length = sizeof(mac_ctrl_msg_t) + (ctrl_msg->num_users * sizeof(user_resource_t));
+
   byte_array_t  ba = {0};
-  ba.buf = malloc(sizeof(mac_ctrl_msg_t)); 
+  ba.buf = malloc(total_length); 
   assert(ba.buf != NULL);
 
+  // Copy the base structure without the pointer data
   memcpy(ba.buf, ctrl_msg, sizeof(mac_ctrl_msg_t));
 
-  ba.len = sizeof(mac_ctrl_hdr_t);
+  // If there are users, copy the user data after the base structure
+  if (ctrl_msg->num_users > 0) {
+      memcpy(ba.buf + sizeof(mac_ctrl_msg_t), ctrl_msg->resource_alloc, ctrl_msg->num_users * sizeof(user_resource_t));
+  }
+
+  ba.len = total_length;
+
+  printf("Encoded len: %lu, Expected len: %lu \n", ba.len, total_length);
+
   return ba;
 }
 

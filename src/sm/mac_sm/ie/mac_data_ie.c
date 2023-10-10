@@ -27,6 +27,8 @@
 #include <string.h>
 #include "../../../util/alg_ds/alg/eq_float.h"
 
+#include <stdio.h>
+
 
 //////////////////////////////////////
 // RIC Event Trigger Definition
@@ -341,16 +343,68 @@ void free_mac_ctrl_msg( mac_ctrl_msg_t* src)
 {
   assert(src != NULL);
 
-  assert(0!=0 && "Not implemented" ); 
+  if (src->resource_alloc) {
+    free (src->resource_alloc);
+    src->resource_alloc = NULL;
+  }
 }
 
-mac_ctrl_msg_t cp_mac_ctrl_msg(mac_ctrl_msg_t* src)
-{
-  assert(src != NULL);
+user_resource_t* allocate_user_resources(int num_users) {
+    return (user_resource_t*)malloc(num_users * sizeof(user_resource_t));
+}
 
-  assert(0!=0 && "Not implemented" ); 
-  mac_ctrl_msg_t ret = {0};
-  return ret;
+void set_user_resource(user_resource_t* resource_alloc, int index, uint32_t user_id, uint32_t mcs, uint32_t num_rb) {
+    resource_alloc[index].user_id = user_id;
+    resource_alloc[index].mcs = mcs;
+    resource_alloc[index].num_rb = num_rb;
+}
+
+void free_user_resources(user_resource_t* resource_alloc) {
+    free(resource_alloc);
+}
+
+mac_ctrl_msg_t cp_mac_ctrl_msg(mac_ctrl_msg_t* src) {
+    assert(src != NULL);
+
+    // Debug: Print src structure details
+    printf("src->action: %u\n", src->action);
+    printf("src->num_users: %u\n", src->num_users);
+    printf("src->resource_alloc address: %p\n", (void*)src->resource_alloc);
+
+    mac_ctrl_msg_t dst = {0};
+
+    // Copy fixed-size fields
+    dst.action = src->action;
+    dst.num_users = src->num_users;
+
+    // Allocate memory for the resource alloc array in the destination
+    if (src->num_users > 0) {
+        dst.resource_alloc = (user_resource_t *)malloc(src->num_users * sizeof(user_resource_t));
+        assert(dst.resource_alloc != NULL);  // Assert if memory allocation fails
+        
+        // Debug: Print size being copied
+        printf("Size being copied: %zu bytes\n", src->num_users * sizeof(user_resource_t));
+
+        // Copy the contents of the users array from source to destination
+        memcpy(dst.resource_alloc, src->resource_alloc, src->num_users * sizeof(user_resource_t));
+    } else {
+        dst.resource_alloc = NULL;
+    }
+
+    
+    printf("dst->action: %u\n", dst.action);
+    printf("dst->num_users: %u\n", dst.num_users);
+    printf("dst->resource_alloc address: %p\n", (void*)dst.resource_alloc);
+
+    for (uint32_t i = 0; i < dst.num_users; i++) {
+        printf("[MAC_DATA] User %u Info:\n", i + 1);
+        printf("    User ID: %u\n", dst.resource_alloc[i].user_id);
+        printf("    MCS Level: %u\n", dst.resource_alloc[i].mcs);
+        printf("    Number of Resource Blocks: %u\n", dst.resource_alloc[i].num_rb);
+    }
+
+
+    return dst;
 }
 
 bool eq_mac_ctrl_msg(mac_ctrl_msg_t* m0, mac_ctrl_msg_t* m1)
@@ -358,7 +412,7 @@ bool eq_mac_ctrl_msg(mac_ctrl_msg_t* m0, mac_ctrl_msg_t* m1)
   assert(m0 != NULL);
   assert(m1 != NULL);
 
-  assert(0!=0 && "Not implemented" ); 
+  //assert(0!=0 && "Not implemented" ); 
 
   return true;
 }

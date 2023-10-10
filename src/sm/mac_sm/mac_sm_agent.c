@@ -115,18 +115,31 @@ sm_ctrl_out_data_t on_control_mac_sm_ag(sm_agent_t const* sm_agent, sm_ctrl_req_
   assert(data != NULL);
   sm_mac_agent_t* sm = (sm_mac_agent_t*) sm_agent;
 
+
+  printf("[AGENT] Start decoding hdr");
   mac_ctrl_hdr_t hdr = mac_dec_ctrl_hdr(&sm->enc, data->len_hdr, data->ctrl_hdr);
   assert(hdr.dummy == 0 && "Only dummy == 0 supported ");
 
+  printf("[AGENT] Start decoding msg");
   mac_ctrl_msg_t msg = mac_dec_ctrl_msg(&sm->enc, data->len_msg, data->ctrl_msg);
   assert(msg.action == 42 && "Only action number 42 supported");
+  printf("[AGENT] Alloc length: %lu, MAC length: %lu, User num: %u\n", data->len_msg, sizeof(mac_ctrl_msg_t), msg.num_users);
+  printf("[AGENT] Resource alloc address: %p\n", (void*)msg.resource_alloc);
 
 //  sm_ag_if_wr_t wr = {.type = CONTROL_SM_AG_IF_WR };
 //  wr.ctrl.type = MAC_CTRL_REQ_V0; 
 
+  for (uint32_t i = 0; i < msg.num_users; i++) {
+        printf("[AGENT] User %u Info:\n", i + 1);
+        printf("    User ID: %u\n", msg.resource_alloc[i].user_id);
+        printf("    MCS Level: %u\n", msg.resource_alloc[i].mcs);
+        printf("    Number of Resource Blocks: %u\n", msg.resource_alloc[i].num_rb);
+    }
+
+
   mac_ctrl_req_data_t mac_ctrl = {0};
   mac_ctrl.hdr.dummy = 0;
-  mac_ctrl.msg.action = msg.action;
+  mac_ctrl.msg = msg;
 
   sm->base.io.write_ctrl(&mac_ctrl);
   sm_ctrl_out_data_t ret = {0};
