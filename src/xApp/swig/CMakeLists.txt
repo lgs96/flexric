@@ -87,7 +87,7 @@ if(XAPP_TARGET_LANGUAGE STREQUAL "PYTHON_LANG")
      "${CMAKE_SOURCE_DIR}/examples/xApp/python3/xapp_mac_rlc_pdcp_moni.py" "${CMAKE_BINARY_DIR}/examples/xApp/python3/xapp_mac_rlc_pdcp_moni.py" )
 
    add_custom_command(TARGET xapp_sdk POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
-     "${CMAKE_SOURCE_DIR}/examples/xApp/python3/xapp_pendulum5G.py" "${CMAKE_BINARY_DIR}/examples/xApp/python3/xapp_pendulum5G.py" )
+     "${CMAKE_SOURCE_DIR}/examples/xApp/python3/xapp_custom.py" "${CMAKE_BINARY_DIR}/examples/xApp/python3/xapp_custom.py" )
 
    add_custom_command(TARGET xapp_sdk POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
      "${CMAKE_SOURCE_DIR}/examples/xApp/python3/xapp_slice_moni_ctrl.py" "${CMAKE_BINARY_DIR}/examples/xApp/python3/xapp_slice_moni_ctrl.py" )
